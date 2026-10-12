@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="离线查看理想 RC 电路的充放电曲线、时间常数与某一时刻的电容电压。">
+  <title>RC 充放电 · RC Step View</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="model.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main>
+    <header>
+      <div><p class="eyebrow">RC STEP VIEW</p><h1>RC 充放电</h1><p class="intro">改几个参数，看看电容电压怎样随时间变化。</p></div>
+      <span class="offline">离线可用 · 理想元件模型</span>
+    </header>
+    <div class="workspace">
+      <section class="settings" aria-labelledby="settings-title">
+        <h2 id="settings-title">电路参数</h2>
+        <form id="parameters">
+          <label for="resistance">电阻 R <span>kΩ</span></label>
+          <input id="resistance" type="number" min="0.1" max="1000" step="any" value="10" required>
+          <label for="capacitance">电容 C <span>µF</span></label>
+          <input id="capacitance" type="number" min="0.1" max="1000" step="any" value="10" required>
+          <label for="voltage">电压 <span>V</span></label>
+          <input id="voltage" type="number" min="0" max="24" step="any" value="5" required aria-describedby="initial-condition">
+          <label for="window">观察时长 <span>ms</span></label>
+          <input id="window" type="number" min="0.001" max="5000000" step="any" value="500" required>
+          <p class="note">换参数后保留观察窗口，方便比较快慢。</p>
+          <div class="actions"><button type="submit" class="primary">更新曲线</button><button id="fit" type="button">显示到 5τ</button></div>
+          <p id="error" class="error" role="status" aria-live="polite"></p>
+        </form>
+        <svg class="circuit" viewBox="0 0 300 220" role="img" aria-labelledby="circuit-title">
+          <title id="circuit-title">单电阻与单电容组成的串联回路</title>
+          <g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+            <path d="M50 100 V55 H105 M195 55 H250 V115 M250 135 V185 H50 V150"/>
+            <path d="M105 55 L112 45 L124 65 L136 45 L148 65 L160 45 L172 65 L184 45 L195 55"/>
+            <path d="M229 115 H271 M229 135 H271"/>
+            <g id="source"><circle cx="50" cy="125" r="25"/><path d="M42 117 H58 M50 109 V125 M42 137 H58"/></g>
+            <path id="bypass" d="M50 100 V150" hidden/>
+          </g>
+          <g class="circuit-label" text-anchor="middle"><text id="r-label" x="150" y="30">R = 10 kΩ</text><text id="c-label" x="240" y="207">C = 10 µF</text><text id="source-label" x="50" y="207">5 V</text><text x="281" y="128">V<tspan baseline-shift="sub" font-size="9">C</tspan></text></g>
+        </svg>
+        <p id="initial-condition" class="note"></p>
+      </section>
+      <section class="plot-panel" aria-labelledby="plot-title">
+        <div class="plot-heading"><h2 id="plot-title">电容电压</h2><div class="mode-switch" aria-label="充放电模式"><button id="charge" type="button" aria-pressed="true">充电</button><button id="discharge" type="button" aria-pressed="false">放电</button></div></div>
+        <div class="metrics"><div><span>时间常数 τ = RC</span><strong id="tau"></strong></div><div><span>1τ 时的电容电压</span><strong id="at-tau"></strong></div><div><span>5τ 时的电容电压</span><strong id="at-five"></strong></div></div>
+        <svg id="plot" viewBox="0 0 860 360" role="img" aria-labelledby="plot-description"></svg>
+        <label class="cursor-label" for="cursor">查看某一时刻 <output id="readout" for="cursor"></output></label>
+        <input id="cursor" type="range" min="0" max="1000" step="1" value="200" aria-describedby="readout">
+        <div class="range-labels"><span>0</span><span id="window-label"></span></div>
+        <p id="formula" class="formula"></p>
+        <p class="note">横轴是实际时间，纵轴是电容电压。虚线标记 1τ；超出当前窗口时不显示。</p>
+      </section>
+    </div>
+    <footer>只考虑一个理想电阻、一个理想电容和瞬时切换；未计入元件误差、漏电和电源内阻。<a href="https://openstax.org/books/university-physics-volume-2/pages/10-5-rc-circuits" target="_blank" rel="noopener noreferrer">公式参考：OpenStax RC Circuits</a></footer>
+  </main>
+</body>
+</html>
