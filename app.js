@@ -6,6 +6,7 @@ const plot = byId("plot");
 let mode = "charge";
 let model = circuit(10, 10, 5);
 let windowSeconds = 0.5;
+let reference = null;
 
 function number(value) { return Number(value.toPrecision(4)).toString(); }
 function time(value) {
@@ -20,18 +21,21 @@ function svg(tag, attributes = {}, text) {
   if (text !== undefined) element.textContent = text;
   return element;
 }
+function describe(curve, curveMode) {
+  return `${curveMode === "charge" ? "充电" : "放电"} · R ${number(curve.resistanceOhms / 1000)} kΩ · C ${number(curve.capacitanceFarads * 1e6)} µF · V ${number(curve.voltage)} V · τ ${time(curve.tauSeconds)}`;
+}
 
 function draw() {
   const width = Math.max(240, plot.clientWidth || 860);
   const height = width < 420 ? 300 : 360;
   const left = 52, top = 30, right = 24, bottom = 52;
   plot.setAttribute("viewBox", `0 0 ${width} ${height}`);
-  const maxVoltage = model.voltage || 1;
+  const maxVoltage = Math.max(model.voltage, reference ? reference.model.voltage : 0) || 1;
   const x = seconds => left + seconds / windowSeconds * (width - left - right);
   const y = volts => height - bottom - volts / maxVoltage * (height - top - bottom);
   const timeScale = windowSeconds < 0.001 ? 1e6 : windowSeconds < 1 ? 1000 : 1;
   const unit = timeScale === 1e6 ? "µs" : timeScale === 1000 ? "ms" : "s";
-  plot.replaceChildren(svg("title", { id: "plot-description" }, `${mode === "charge" ? "充电" : "放电"}曲线，时间 0 至 ${time(windowSeconds)}，电压 0 至 ${number(maxVoltage)} V`));
+  plot.replaceChildren(svg("title", { id: "plot-description" }, `${mode === "charge" ? "充电" : "放电"}曲线${reference ? "与保留的对照曲线" : ""}，时间 0 至 ${time(windowSeconds)}，电压 0 至 ${number(maxVoltage)} V`));
   for (let index = 0; index <= 5; index++) {
     const seconds = windowSeconds * index / 5, volts = maxVoltage * index / 5;
     plot.append(svg("line", { x1: x(seconds), x2: x(seconds), y1: top, y2: y(0), class: "plot-grid" }),
@@ -46,15 +50,29 @@ function draw() {
     plot.append(svg("line", { id: "tau-line", x1: x(model.tauSeconds), x2: x(model.tauSeconds), y1: top, y2: y(0), class: "tau-marker" }),
       svg("text", { x: Math.min(x(model.tauSeconds) + 6, width - right - 20), y: top + 14, class: "plot-text" }, "1τ"));
   }
-  const points = sampleCurve(model, mode, windowSeconds);
-  const path = points.map((point, index) => `${index === 0 ? "M" : "L"}${x(point.timeSeconds)},${y(point.voltage)}`).join(" ");
-  plot.append(svg("path", { id: "response", d: path, class: "response-line" }));
+  const curvePath = (curve, curveMode) => sampleCurve(curve, curveMode, windowSeconds)
+    .map((point, index) => `${index === 0 ? "M" : "L"}${x(point.timeSeconds)},${y(point.voltage)}`).join(" ");
+  if (reference) plot.append(svg("path", { id: "reference-response", d: curvePath(reference.model, reference.mode), class: "reference-line" }));
+  plot.append(svg("path", { id: "response", d: curvePath(model, mode), class: "response-line" }));
   const selectedTime = windowSeconds * Number(byId("cursor").value) / 1000;
   const selectedVoltage = voltageAt(model, selectedTime, mode);
   plot.append(svg("line", { x1: x(selectedTime), x2: x(selectedTime), y1: top, y2: y(0), class: "cursor-marker" }),
     svg("circle", { id: "selected-point", cx: x(selectedTime), cy: y(selectedVoltage), r: 5, class: "cursor-dot" }));
   byId("readout").textContent = `t = ${time(selectedTime)} · V_C = ${number(selectedVoltage)} V`;
-  byId("cursor").setAttribute("aria-valuetext", byId("readout").textContent);
+  const referenceReadout = byId("reference-readout");
+  referenceReadout.hidden = !reference;
+  referenceReadout.textContent = "";
+  if (reference) {
+    const referenceVoltage = voltageAt(reference.model, selectedTime, reference.mode);
+    plot.append(svg("circle", { id: "reference-point", cx: x(selectedTime), cy: y(referenceVoltage), r: 4, class: "reference-dot" }));
+    referenceReadout.textContent = `同一时刻，对照 V_C = ${number(referenceVoltage)} V`;
+  }
+  byId("cursor").setAttribute("aria-valuetext", [byId("readout").textContent, referenceReadout.textContent].filter(Boolean).join("；"));
+  byId("current-description").textContent = `当前（实线）· ${describe(model, mode)}`;
+  byId("reference-description").hidden = !reference;
+  byId("reference-description").textContent = reference ? `对照（虚线）· ${describe(reference.model, reference.mode)}` : "";
+  byId("clear-reference").disabled = !reference;
+  byId("capture").textContent = reference ? "用当前曲线替换对照" : "保留当前曲线作对照";
   byId("tau").textContent = time(model.tauSeconds);
   byId("at-tau").textContent = `${number(voltageAt(model, model.tauSeconds, mode))} V`;
   byId("at-five").textContent = `${number(voltageAt(model, 5 * model.tauSeconds, mode))} V`;
@@ -86,11 +104,22 @@ function update(fit = false) {
     if (fit) byId("window").value = String(windowSeconds * 1000);
     byId("error").textContent = "";
     draw();
-  } catch (error) { byId("error").textContent = `${error.message} 曲线保留上次有效参数。`; }
+    return true;
+  } catch (error) {
+    byId("error").textContent = `${error.message} 曲线保留上次有效参数。`;
+    return false;
+  }
 }
 byId("parameters").addEventListener("submit", event => { event.preventDefault(); update(); });
 for (const id of ["resistance", "capacitance", "voltage", "window"]) byId(id).addEventListener("input", () => update());
 byId("fit").addEventListener("click", () => update(true));
+byId("capture").addEventListener("click", () => {
+  if (!update()) return;
+  // Copy the valid circuit and mode; both curves use the live observation window.
+  reference = { model: { ...model }, mode };
+  draw();
+});
+byId("clear-reference").addEventListener("click", () => { reference = null; draw(); });
 byId("cursor").addEventListener("input", draw);
 for (const name of ["charge", "discharge"]) byId(name).addEventListener("click", () => { mode = name; draw(); });
 window.addEventListener("resize", draw);

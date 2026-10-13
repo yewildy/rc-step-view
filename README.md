@@ -18,6 +18,18 @@ Resistance is in kΩ, capacitance in µF and the observation window in ms. Defau
 
 也可以在仓库目录运行 `python -m http.server 8000`，再打开 `http://localhost:8000`。 / You can also run `python -m http.server 8000` in the repository and visit `http://localhost:8000`.
 
+## 留一条曲线作对照 / Keep a comparison curve
+
+点击“保留当前曲线作对照”，再改变 R 或 C。实线是当前参数，虚线是保留的参数，图例列出各自的 R、C、V、模式和 τ。滑块同时读取两条曲线在同一时刻的电压。
+
+Click “保留当前曲线作对照”, then change R or C. The solid line uses current parameters; the dashed line keeps the captured parameters. The legend lists R, C, V, mode and τ for each. The slider reads both voltages at the same time.
+
+每次只保留一条对照，可以替换或清除。对照的电压与模式也会保留，两条曲线共用当前观察窗口，纵轴按较大的电压缩放。“显示到 5τ”仍按当前曲线调整窗口。刷新后对照会清除。
+
+Only one comparison is kept; replace or clear it as needed. Its voltage and mode stay captured. Both curves share the live observation window, with the vertical scale covering the larger voltage. “显示到 5τ” still follows the current curve. Refreshing clears the comparison.
+
+![同一窗口的 RC 对照曲线 / RC curves in the same time window](docs/comparison.png)
+
 ## 计算方式 / Model
 
 时间常数 `τ = R × C`，计算前把单位换成 Ω 和 F。充电从 0 V 开始，接入所选电压 V 的理想电源；放电从所选电压 V 开始，电源断开，通过 R 放电。
@@ -39,11 +51,13 @@ The page marks 1τ and reports the voltages at 1τ and 5τ. The equations follow
 
 `model.js` handles unit conversion, validation and curve sampling. `app.js` reads inputs and draws the SVG chart and circuit sketch. When the window is much longer than τ, most samples cover the first 10τ to retain the fast initial change.
 
+保留对照时复制当前有效模型与模式，之后的输入不会改动这份副本。绘图与读数使用同一套采样和电压函数。 / Capturing copies the valid model and mode, so later input leaves that copy unchanged. Both curves and readings use the same sampling and voltage functions.
+
 装有 Node.js 时运行 `node --test`。检查包括已知参数的数值、固定时刻的 R/C 对比、曲线边界与单调性、长窗口采样和无效输入。 / With Node.js installed, run `node --test`. Checks cover known values, R/C changes at a fixed time, bounds and monotonicity, long-window sampling and invalid input.
 
-一个小练习：保持默认 500 ms 窗口和滑块的 100 ms 时刻，把 R 从 10 改为 20 kΩ。先猜电压会升高还是降低，再检查 τ 和读数。想改代码，可以试着把默认 C 从 10 改为 22 µF，并让输入框与初始曲线保持一致。
+一个小练习：先保留默认曲线作对照，保持 500 ms 窗口和滑块的 100 ms 时刻，把 R 从 10 改为 20 kΩ。先猜电压会升高还是降低，再检查两条曲线的 τ 和读数。想改代码，可以试着把默认 C 从 10 改为 22 µF，并让输入框与初始曲线保持一致。
 
-A small exercise: keep the default 500 ms window and the slider at 100 ms, then change R from 10 to 20 kΩ. Predict whether the voltage increases or decreases, then check τ and the reading. For a code change, try setting the default C to 22 µF while keeping the input and initial curve consistent.
+A small exercise: capture the default curve, keep the 500 ms window and the slider at 100 ms, then change R from 10 to 20 kΩ. Predict whether the voltage increases or decreases, then check both time constants and readings. For a code change, try setting the default C to 22 µF while keeping the input and initial curve consistent.
 
 ## 当前限制 / Limits
 

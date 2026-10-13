@@ -16,6 +16,7 @@ label span { color: var(--muted); }
 input[type=number] { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; background: #fff; color: var(--ink); font-size: 14px; }
 button { cursor: pointer; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); padding: 9px 12px; font-size: 12px; }
 button:hover { background: #f0f3f4; }
+button:disabled { cursor: default; opacity: .45; }
 .primary, .mode-switch button[aria-pressed=true] { background: var(--blue); border-color: var(--blue); color: #fff; }
 .primary:hover { background: #2c5161; }
 button:focus-visible, input:focus-visible { outline: 3px solid #9bb7c0; outline-offset: 3px; }
@@ -31,6 +32,14 @@ button:focus-visible, input:focus-visible { outline: 3px solid #9bb7c0; outline-
 .metrics span { display: block; color: var(--muted); font-size: 11px; line-height: 1.6; }
 .metrics strong { display: block; font-size: 21px; font-weight: 500; margin-top: 9px; overflow-wrap: anywhere; }
 #plot { display: block; width: 100%; height: auto; }
+.comparison-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.curve-legend { margin: 12px 0 14px; font-size: 11px; line-height: 1.8; overflow-wrap: anywhere; }
+.curve-legend p { margin: 5px 0; }
+.curve-legend p::before { content: ""; display: inline-block; width: 20px; margin-right: 7px; border-top: 2px solid var(--blue); vertical-align: middle; }
+.curve-legend #reference-description::before { border-top: 2px dashed var(--copper); }
+.reference-line { fill: none; stroke: var(--copper); stroke-width: 2.5; stroke-dasharray: 7 5; }
+.reference-dot { fill: var(--copper); stroke: #fff; stroke-width: 2; }
+.reference-readout { display: block; margin-top: 10px; color: var(--copper); font-size: 12px; line-height: 1.6; }
 .plot-grid { stroke: #e8eded; stroke-width: 1; }
 .plot-axis { fill: none; stroke: #a8b8bd; stroke-width: 1; }
 .plot-text { fill: var(--muted); font-size: 13px; }
