@@ -120,6 +120,13 @@ byId("capture").addEventListener("click", () => {
   draw();
 });
 byId("clear-reference").addEventListener("click", () => { reference = null; draw(); });
+byId("load-example").addEventListener("click", () => {
+  const values = { resistance: "10", capacitance: "22", voltage: "5", window: "500", cursor: "200" };
+  for (const [id, value] of Object.entries(values)) byId(id).value = value;
+  mode = "charge";
+  reference = { model: circuit(10, 10, 5), mode: "charge" };
+  update();
+});
 byId("cursor").addEventListener("input", draw);
 for (const name of ["charge", "discharge"]) byId(name).addEventListener("click", () => { mode = name; draw(); });
 window.addEventListener("resize", draw);

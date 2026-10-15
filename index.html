@@ -56,6 +56,12 @@
         <output id="reference-readout" class="reference-readout" for="cursor" hidden></output>
         <p id="formula" class="formula"></p>
         <p class="note">两条曲线共用实际时间与电压刻度。竖线标记当前曲线的 1τ；超出窗口时不显示。</p>
+        <section class="worked-example" aria-labelledby="example-title">
+          <h3 id="example-title">试一试：电容增大以后</h3>
+          <p>固定 R = 10 kΩ、V = 5 V，对照 10 µF 与 22 µF 在 100 ms 时的电压。</p>
+          <button id="load-example" type="button" aria-describedby="example-note">加载 10 / 22 µF 对照</button>
+          <p id="example-note" class="note">会替换当前参数与对照，并切换到充电模式。</p>
+        </section>
       </section>
     </div>
     <footer>只考虑一个理想电阻、一个理想电容和瞬时切换；未计入元件误差、漏电和电源内阻。<a href="https://openstax.org/books/university-physics-volume-2/pages/10-5-rc-circuits" target="_blank" rel="noopener noreferrer">公式参考：OpenStax RC Circuits</a></footer>

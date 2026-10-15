@@ -30,6 +30,28 @@ Only one comparison is kept; replace or clear it as needed. Its voltage and mode
 
 ![同一窗口的 RC 对照曲线 / RC curves in the same time window](docs/comparison.png)
 
+## 一个电容对照例子 / A capacitance example
+
+点击页面底部的“加载 10 / 22 µF 对照”。这会用下面的两组充电参数替换当前参数和对照，窗口设为 500 ms，滑块放在 100 ms。
+
+Click “加载 10 / 22 µF 对照” below the chart. This replaces the current circuit and reference with the two charging cases below, sets a 500 ms window, and moves the cursor to 100 ms.
+
+| 参数 / Parameter | 对照 / Reference | 当前 / Current |
+| --- | --- | --- |
+| R | 10 kΩ | 10 kΩ |
+| C | 10 µF | 22 µF |
+| V | 5 V | 5 V |
+| τ | 100 ms | 220 ms |
+| V_C at 100 ms | ≈ 3.161 V | ≈ 1.826 V |
+
+同一时刻，较大的电容充电更慢。这里比较的是相同的实际时间；如果各看各的 1τ，两者都会达到约 3.161 V。表中数值由本项目的理想模型计算，页面按四位有效数字显示。
+
+At the same actual time, the larger capacitor charges more slowly. At each circuit's own 1τ, however, both reach about 3.161 V. Table values are calculated by this project's ideal model; the page shows four significant figures.
+
+接着把当前 C 改为 47 µF，先猜 100 ms 的电压，再查看读数。想改代码，可以把例子里的 22 µF 换成 47 µF，同时更新按钮、讲解和表中的计算结果。
+
+Next, change the current C to 47 µF and predict its voltage at 100 ms before checking the reading. For a code exercise, replace 22 µF with 47 µF in the example, then update the button, explanation and calculated table values together.
+
 ## 计算方式 / Model
 
 时间常数 `τ = R × C`，计算前把单位换成 Ω 和 F。充电从 0 V 开始，接入所选电压 V 的理想电源；放电从所选电压 V 开始，电源断开，通过 R 放电。
