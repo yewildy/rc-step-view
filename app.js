@@ -110,6 +110,59 @@ function update(fit = false) {
     return false;
   }
 }
+
+function plotImage() {
+  const chart = plot.cloneNode(true);
+  const original = plot.querySelectorAll("*");
+  const copied = chart.querySelectorAll("*");
+  const properties = ["fill", "stroke", "stroke-width", "stroke-dasharray", "stroke-linecap",
+    "stroke-linejoin", "font-family", "font-size", "font-weight", "opacity"];
+  // Standalone SVG files cannot rely on this page's external stylesheet.
+  original.forEach((element, index) => {
+    const style = getComputedStyle(element);
+    for (const property of properties) copied[index].setAttribute(property, style.getPropertyValue(property));
+  });
+  chart.removeAttribute("id");
+  const bounds = plot.viewBox.baseVal;
+  const width = Math.max(320, bounds.width);
+  const chartHeight = bounds.height * width / bounds.width;
+  const selectedTime = windowSeconds * Number(byId("cursor").value) / 1000;
+  const image = svg("svg", { xmlns: ns, role: "img", "aria-labelledby": "export-title",
+    "font-family": getComputedStyle(document.body).fontFamily, "font-size": 12, fill: "#293d49" });
+  image.append(svg("title", { id: "export-title" }, "RC Step View · 理想 RC 响应"),
+    svg("desc", {}, [describe(model, mode), reference ? describe(reference.model, reference.mode) : "",
+      `t = ${time(selectedTime)}, window = ${time(windowSeconds)}`].filter(Boolean).join("; ")),
+    svg("rect", { width: "100%", height: "100%", fill: "white" }));
+  let row = 28;
+  const text = (value, x = 16, attributes = {}) => {
+    image.append(svg("text", { x, y: row, ...attributes }, value));
+    row += 20;
+  };
+  text("RC Step View · 理想 RC 响应", 16, { "font-size": 16, "font-weight": 600 });
+  text(`t = ${time(selectedTime)} · window = ${time(windowSeconds)}`);
+  const legend = (label, curve, curveMode, pathId, dashed) => {
+    const color = getComputedStyle(byId(pathId)).stroke;
+    image.append(svg("line", { x1: 16, x2: 36, y1: row - 4, y2: row - 4, stroke: color,
+      "stroke-width": 2.5, "stroke-dasharray": dashed ? "7 5" : "none" }));
+    text(`${label} · ${curveMode === "charge" ? "充电 / Charge" : "放电 / Discharge"}`, 44);
+    text(`R ${number(curve.resistanceOhms / 1000)} kΩ · C ${number(curve.capacitanceFarads * 1e6)} µF · V ${number(curve.voltage)} V`);
+    text(`τ ${time(curve.tauSeconds)} · V_C(t) ${number(voltageAt(curve, selectedTime, curveMode))} V`);
+  };
+  legend("当前 / Current", model, mode, "response", false);
+  if (reference) legend("对照 / Reference", reference.model, reference.mode, "reference-response", true);
+  chart.setAttribute("x", 0);
+  chart.setAttribute("y", row + 8);
+  chart.setAttribute("width", width);
+  chart.setAttribute("height", chartHeight);
+  image.append(chart);
+  row += chartHeight + 28;
+  text("Ideal single RC · calculated, not measured", 16, { "font-size": 11 });
+  image.setAttribute("viewBox", `0 0 ${width} ${row}`);
+  image.setAttribute("width", width);
+  image.setAttribute("height", row);
+  return new XMLSerializer().serializeToString(image);
+}
+
 byId("parameters").addEventListener("submit", event => { event.preventDefault(); update(); });
 for (const id of ["resistance", "capacitance", "voltage", "window"]) byId(id).addEventListener("input", () => update());
 byId("fit").addEventListener("click", () => update(true));
@@ -120,6 +173,18 @@ byId("capture").addEventListener("click", () => {
   draw();
 });
 byId("clear-reference").addEventListener("click", () => { reference = null; draw(); });
+byId("save-svg").addEventListener("click", () => {
+  if (!update()) return;
+  const url = URL.createObjectURL(new Blob([plotImage()], { type: "image/svg+xml;charset=utf-8" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `rc-response-${mode}${reference ? "-comparison" : ""}.svg`;
+  link.hidden = true;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
 byId("load-example").addEventListener("click", () => {
   const values = { resistance: "10", capacitance: "22", voltage: "5", window: "500", cursor: "200" };
   for (const [id, value] of Object.entries(values)) byId(id).value = value;

@@ -47,7 +47,7 @@
       <section class="plot-panel" aria-labelledby="plot-title">
         <div class="plot-heading"><h2 id="plot-title">电容电压</h2><div class="mode-switch" aria-label="充放电模式"><button id="charge" type="button" aria-pressed="true">充电</button><button id="discharge" type="button" aria-pressed="false">放电</button></div></div>
         <div class="metrics"><div><span>时间常数 τ = RC</span><strong id="tau"></strong></div><div><span>1τ 时的电容电压</span><strong id="at-tau"></strong></div><div><span>5τ 时的电容电压</span><strong id="at-five"></strong></div></div>
-        <div class="comparison-controls"><button id="capture" type="button">保留当前曲线作对照</button><button id="clear-reference" type="button" disabled>清除对照</button></div>
+        <div class="comparison-controls"><button id="capture" type="button">保留当前曲线作对照</button><button id="clear-reference" type="button" disabled>清除对照</button><button id="save-svg" type="button">保存曲线 SVG</button></div>
         <div class="curve-legend" aria-label="曲线参数"><p id="current-description"></p><p id="reference-description" hidden></p></div>
         <svg id="plot" viewBox="0 0 860 360" role="img" aria-labelledby="plot-description"></svg>
         <label class="cursor-label" for="cursor">查看某一时刻 <output id="readout" for="cursor"></output></label>

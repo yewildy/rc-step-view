@@ -30,6 +30,16 @@ Only one comparison is kept; replace or clear it as needed. Its voltage and mode
 
 ![同一窗口的 RC 对照曲线 / RC curves in the same time window](docs/comparison.png)
 
+## 保存曲线 / Save a graph
+
+点击“保存曲线 SVG”，下载当前曲线图。文件带有坐标轴、颜色与线型、R/C/V、时间常数、模式、观察时长和当前滑块时刻的电压；有对照时会同时保存两组信息。可单独用浏览器打开，不需要原页面的样式文件。输入无效时会先提示修正，不下载文件。
+
+Click “保存曲线 SVG” to download the current graph. The file includes axes, colors and line styles, R/C/V, time constants, modes, the observation window and voltages at the selected cursor time. Both sets are included when a reference is present. Open the file directly in a browser without the original page or stylesheet. Invalid inputs must be corrected before downloading.
+
+[查看导出的 10 / 22 µF 对照图 / Open the exported 10 / 22 µF comparison](docs/export-example.svg)。这是下面例子的理想模型计算图，并非测量数据。SVG 是图片快照，目前不能导入它来恢复页面参数。
+
+This is a calculated image of the ideal example below, not measured data. The SVG is an image snapshot; it cannot be imported to restore the page parameters.
+
 ## 一个电容对照例子 / A capacitance example
 
 点击页面底部的“加载 10 / 22 µF 对照”。这会用下面的两组充电参数替换当前参数和对照，窗口设为 500 ms，滑块放在 100 ms。
@@ -75,11 +85,13 @@ The page marks 1τ and reports the voltages at 1τ and 5τ. The equations follow
 
 保留对照时复制当前有效模型与模式，之后的输入不会改动这份副本。绘图与读数使用同一套采样和电压函数。 / Capturing copies the valid model and mode, so later input leaves that copy unchanged. Both curves and readings use the same sampling and voltage functions.
 
+`plotImage()` 复制已绘制的 SVG，把实际生效的填色、描边和字体写入元素属性，再补上参数与读数。导出图因此不依赖外部 CSS，显示内容与当前曲线保持一致。 / `plotImage()` clones the drawn SVG, copies the effective fill, stroke and font styles into element attributes, and adds parameters and readings. The exported graph is independent of external CSS and matches the current curves.
+
 装有 Node.js 时运行 `node --test`。检查包括已知参数的数值、固定时刻的 R/C 对比、曲线边界与单调性、长窗口采样和无效输入。 / With Node.js installed, run `node --test`. Checks cover known values, R/C changes at a fixed time, bounds and monotonicity, long-window sampling and invalid input.
 
-一个小练习：先保留默认曲线作对照，保持 500 ms 窗口和滑块的 100 ms 时刻，把 R 从 10 改为 20 kΩ。先猜电压会升高还是降低，再检查两条曲线的 τ 和读数。想改代码，可以试着把默认 C 从 10 改为 22 µF，并让输入框与初始曲线保持一致。
+一个小练习：先保留默认曲线作对照，保持 500 ms 窗口和滑块的 100 ms 时刻，把 R 从 10 改为 20 kΩ。先猜电压会升高还是降低，再检查两条曲线的 τ 和读数，保存 SVG 并核对两组参数。想改代码，可以试着把默认 C 从 10 改为 22 µF，并让输入框与初始曲线保持一致。
 
-A small exercise: capture the default curve, keep the 500 ms window and the slider at 100 ms, then change R from 10 to 20 kΩ. Predict whether the voltage increases or decreases, then check both time constants and readings. For a code change, try setting the default C to 22 µF while keeping the input and initial curve consistent.
+A small exercise: capture the default curve, keep the 500 ms window and the slider at 100 ms, then change R from 10 to 20 kΩ. Predict whether the voltage increases or decreases, then check both time constants and readings. Save an SVG and verify both parameter sets. For a code change, try setting the default C to 22 µF while keeping the input and initial curve consistent.
 
 ## 当前限制 / Limits
 
